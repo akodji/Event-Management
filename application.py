@@ -1,133 +1,175 @@
-# app.py
-
-import streamlit as st
-from event_management import EventManagement
 from datetime import date, time
-import datetime
+from event import Event
 
-# Initialize the EventManagement instance
-event_manager = EventManagement()
+class EventManagement:
+    def __init__(self):
+        self.event_map = {}  # Dictionary to store events by ID
+        self.event_set = set()  # Set to store events and allow for sorting
 
-# Define Streamlit application layout
-st.title("Event Scheduler and Calendar")
+    def create_event(self, event_id, title, event_date, event_time, location, description, priority):
+        event = Event(event_id, title, event_date, event_time, location, description, priority)
+        self.event_map[event_id] = event
+        self.event_set.add(event)
+        return event
 
-# Create a new event
-st.header("Create Event")
-with st.form(key="create_event_form"):
-    title = st.text_input("Title")
-    event_date = st.date_input("Date", value=datetime.date.today())
-    event_time = st.time_input("Time", value=datetime.datetime.now().time())
-    location = st.text_input("Location")
-    description = st.text_area("Description")
-    priority = st.slider("Priority", min_value=1, max_value=5)
-    submit_button = st.form_submit_button("Create Event")
+    def modify_event(self, event_id, attribute, new_value):
+        event = self.event_map.get(event_id)
+        if event is None:
+            return False
 
-    if submit_button:
-        event_id = len(event_manager.view_events()) + 1  # Simple ID generation
-        success = event_manager.create_event(event_id, title, event_date, event_time, location, description, priority)
-        if success:
-            st.success(f"Event '{title}' created successfully!")
+        self.event_set.remove(event)
+
+        if attribute.lower() == "title":
+            event.set_title(new_value)
+        elif attribute.lower() == "date":
+            event.set_date(date.fromisoformat(new_value))
+        elif attribute.lower() == "time":
+            event.set_time(time.fromisoformat(new_value))
+        elif attribute.lower() == "location":
+            event.set_location(new_value)
+        elif attribute.lower() == "description":
+            event.set_description(new_value)
         else:
-            st.error("Failed to create event. Event ID might already exist.")
+            return False
 
-# Modify an existing event
-st.header("Modify Event")
-with st.form(key="modify_event_form"):
-    event_id = st.number_input("Event ID", min_value=1)
-    attribute = st.selectbox("Attribute to Modify", ["title", "date", "time", "location", "description", "priority"])
-    new_value = st.text_input("New Value")
-    modify_button = st.form_submit_button("Modify Event")
+        self.event_set.add(event)
+        return True
 
-    if modify_button:
-        try:
-            if attribute in ["date", "time"]:
-                new_value = datetime.datetime.strptime(new_value, "%Y-%m-%d").date() if attribute == "date" else datetime.datetime.strptime(new_value, "%H:%M:%S").time()
-            elif attribute == "priority":
-                new_value = int(new_value)
-            success = event_manager.modify_event(event_id, attribute, new_value)
-            if success:
-                st.success(f"Event ID {event_id} modified successfully!")
-            else:
-                st.error(f"Event ID {event_id} not found.")
-        except ValueError as e:
-            st.error(f"Invalid input: {e}")
+    def delete_event(self, event_id):
+        event = self.event_map.pop(event_id, None)
+        if event:
+            self.event_set.remove(event)
+            return True
+        return False
 
-# Delete an event
-st.header("Delete Event")
-with st.form(key="delete_event_form"):
-    delete_id = st.number_input("Event ID to Delete", min_value=1)
-    delete_button = st.form_submit_button("Delete Event")
+    def view_events(self):
+        if not self.event_set:
+            return "No events to display."
 
-    if delete_button:
-        success = event_manager.delete_event(delete_id)
-        if success:
-            st.success(f"Event ID {delete_id} deleted successfully!")
-        else:
-            st.error(f"Event ID {delete_id} not found.")
+        events_info = []
+        for event in sorted(self.event_set, key=lambda e: (e.get_date(), e.get_time())):
+            events_info.append(f"Event ID: {event.get_id()}\n"
+                               f"Title: {event.get_title()}\n"
+                               f"Date: {event.get_date()}\n"
+                               f"Time: {event.get_time()}\n"
+                               f"Location: {event.get_location()}\n"
+                               f"Description: {event.get_description()}\n"
+                               "------------------------")
+        return "\n".join(events_info)
 
-# View all events
-st.header("View Events")
-events = event_manager.view_events()
-if events:
-    for event in events:
-        st.subheader(f"Event ID: {event.getID()}")
-        st.write(f"**Title**: {event.getTitle()}")
-        st.write(f"**Date**: {event.getDate()}")
-        st.write(f"**Time**: {event.getTime()}")
-        st.write(f"**Location**: {event.getLocation()}")
-        st.write(f"**Description**: {event.getDescription()}")
-        st.write(f"**Priority**: {event.getPriority()}")
-        st.write("---")
-else:
-    st.write("No events to display.")
+    def search_by_title(self, title):
+        found = False
+        events_info = []
+        for event in self.event_set:
+            if event.get_title().lower() == title.lower():
+                found = True
+                events_info.append(f"Event ID: {event.get_id()}\n"
+                                   f"Title: {event.get_title()}\n"
+                                   f"Date: {event.get_date()}\n"
+                                   f"Time: {event.get_time()}\n"
+                                   f"Location: {event.get_location()}\n"
+                                   f"Description: {event.get_description()}\n"
+                                   "------------------------")
+        if not found:
+            return f"No events found with the title: {title}"
+        return "\n".join(events_info)
 
-# Search events
-st.header("Search Events")
-search_option = st.selectbox("Search By", ["Title", "Date", "Location"])
-search_value = st.text_input("Search Value")
-search_button = st.button("Search")
+    def search_by_date(self, event_date):
+        found = False
+        events_info = []
+        for event in self.event_set:
+            if event.get_date() == event_date:
+                found = True
+                events_info.append(f"Event ID: {event.get_id()}\n"
+                                   f"Title: {event.get_title()}\n"
+                                   f"Date: {event.get_date()}\n"
+                                   f"Time: {event.get_time()}\n"
+                                   f"Location: {event.get_location()}\n"
+                                   f"Description: {event.get_description()}\n"
+                                   "------------------------")
+        if not found:
+            return f"No events found with date: {event_date}"
+        return "\n".join(events_info)
 
-if search_button:
-    try:
-        if search_option == "Title":
-            results = event_manager.search_by_title(search_value)
-        elif search_option == "Date":
-            search_value = datetime.datetime.strptime(search_value, "%Y-%m-%d").date()
-            results = event_manager.search_by_date(search_value)
-        elif search_option == "Location":
-            results = event_manager.search_by_location(search_value)
+    def search_by_location(self, location):
+        found = False
+        events_info = []
+        for event in self.event_set:
+            if event.get_location().lower() == location.lower():
+                found = True
+                events_info.append(f"Event ID: {event.get_id()}\n"
+                                   f"Title: {event.get_title()}\n"
+                                   f"Date: {event.get_date()}\n"
+                                   f"Time: {event.get_time()}\n"
+                                   f"Location: {event.get_location()}\n"
+                                   f"Description: {event.get_description()}\n"
+                                   "------------------------")
+        if not found:
+            return f"No events found with location: {location}"
+        return "\n".join(events_info)
 
-        if results:
-            for event in results:
-                st.subheader(f"Event ID: {event.getID()}")
-                st.write(f"**Title**: {event.getTitle()}")
-                st.write(f"**Date**: {event.getDate()}")
-                st.write(f"**Time**: {event.getTime()}")
-                st.write(f"**Location**: {event.getLocation()}")
-                st.write(f"**Description**: {event.getDescription()}")
-                st.write(f"**Priority**: {event.getPriority()}")
-                st.write("---")
-        else:
-            st.write("No matching events found.")
-    except ValueError as e:
-        st.error(f"Invalid date format: {e}")
+    def sort_by_date(self):
+        sorted_events = sorted(self.event_set, key=lambda e: (e.get_date(), e.get_time()))
+        if not sorted_events:
+            return "No events to display."
 
-# Sort events
-st.header("Sort Events")
-sort_option = st.selectbox("Sort By", ["Date", "Title", "Priority"])
-sort_button = st.button("Sort")
-
-if sort_button:
-    sorted_events = event_manager.sort_events(sort_option.lower())
-    if sorted_events:
+        events_info = []
         for event in sorted_events:
-            st.subheader(f"Event ID: {event.getID()}")
-            st.write(f"**Title**: {event.getTitle()}")
-            st.write(f"**Date**: {event.getDate()}")
-            st.write(f"**Time**: {event.getTime()}")
-            st.write(f"**Location**: {event.getLocation()}")
-            st.write(f"**Description**: {event.getDescription()}")
-            st.write(f"**Priority**: {event.getPriority()}")
-            st.write("---")
-    else:
-        st.write("No events to display.")
+            events_info.append(f"Event ID: {event.get_id()}\n"
+                               f"Title: {event.get_title()}\n"
+                               f"Date: {event.get_date()}\n"
+                               f"Time: {event.get_time()}\n"
+                               f"Location: {event.get_location()}\n"
+                               f"Description: {event.get_description()}\n"
+                               "------------------------")
+        return "\n".join(events_info)
+
+    def sort_by_title(self):
+        sorted_events = sorted(self.event_set, key=lambda e: e.get_title())
+        if not sorted_events:
+            return "No events to display."
+
+        events_info = []
+        for event in sorted_events:
+            events_info.append(f"Event ID: {event.get_id()}\n"
+                               f"Title: {event.get_title()}\n"
+                               f"Date: {event.get_date()}\n"
+                               f"Time: {event.get_time()}\n"
+                               f"Location: {event.get_location()}\n"
+                               f"Description: {event.get_description()}\n"
+                               "------------------------")
+        return "\n".join(events_info)
+
+    def sort_by_priority(self):
+        sorted_events = sorted(self.event_set, key=lambda e: e.get_priority(), reverse=True)
+        if not sorted_events:
+            return "No events to display."
+
+        events_info = []
+        for event in sorted_events:
+            events_info.append(f"Event ID: {event.get_id()}\n"
+                               f"Title: {event.get_title()}\n"
+                               f"Date: {event.get_date()}\n"
+                               f"Time: {event.get_time()}\n"
+                               f"Location: {event.get_location()}\n"
+                               f"Description: {event.get_description()}\n"
+                               f"Priority: {event.get_priority()}\n"
+                               "------------------------")
+        return "\n".join(events_info)
+
+    def generate_summary_by_date(self, event_date):
+        found = False
+        events_info = []
+        for event in self.event_set:
+            if event.get_date() == event_date:
+                found = True
+                events_info.append(f"You have an event booked with event ID: {event.get_id()}\n"
+                                   f"Title: {event.get_title()}\n"
+                                   f"Date: {event.get_date()}\n"
+                                   f"Time: {event.get_time()}\n"
+                                   f"Location: {event.get_location()}\n"
+                                   f"Description: {event.get_description()}\n"
+                                   "------------------------")
+        if not found:
+            return f"No events found with date: {event_date}"
+        return "\n".join(events_info)
