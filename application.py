@@ -2,14 +2,27 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
+# Function to encode image for embedding
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode()
+    return f"data:image/jpeg;base64,{encoded_image}"
+
+# Encode the local image file
+image_path = "C:/Users/Anna Kodji/OneDrive - Ashesi University/DSA Project Work/pexels-towfiqu-barbhuiya-3440682-9810172.jpg"
+encoded_image = encode_image(image_path)
+
 # Add custom CSS for background image
 st.markdown(
     f"""
     <style>
     .reportview-container {{
-        background: url('https://www.pexels.com/photo/close-up-photo-of-red-pins-on-a-calendar-9810172/');
+        background: url('{encoded_image}');
         background-size: cover;
         background-position: center;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
     }}
     </style>
     """,
