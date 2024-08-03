@@ -1,3 +1,5 @@
+
+
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -7,7 +9,7 @@ st.markdown(
     f"""
     <style>
     .reportview-container {{
-        background: url('https://www.pexels.com/photo/close-up-photo-of-red-pins-on-a-calendar-9810172/');
+        background: url('assets/pexels-towfiqu-barbhuiya-3440682-9810172.jpg');
         background-size: cover;
         background-position: center;
     }}
@@ -180,5 +182,3 @@ with st.sidebar:
                 st.write("-------------")
         else:
             st.write("No events found in the specified date range.")
-
-i put the photo in the same place in my files where the streamlit script is
