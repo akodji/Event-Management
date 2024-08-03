@@ -1,66 +1,68 @@
-import streamlit as st
-from event_management import EventManagement
 from event import Event
 import datetime
 
-# Initialize EventManagement
-event_manager = EventManagement()
+class EventManagement:
+    def __init__(self):
+        self.eventSet = set()
 
-def add_event():
-    st.header("Create Event")
-    title = st.text_input("Title")
-    date = st.date_input("Date", min_value=datetime.date.today())
-    time = st.time_input("Time")
-    location = st.text_input("Location")
-    description = st.text_area("Description")
-    priority = st.number_input("Priority", min_value=1, max_value=10, value=1)
-    
-    if st.button("Add Event"):
-        event_id = f"{date}-{time}"  # Simple ID based on date and time
-        event = event_manager.create_event(
-            id=event_id,
-            title=title,
-            date=date,
-            time=time,
-            location=location,
-            description=description,
-            priority=priority
-        )
-        st.success(f"Event '{title}' added!")
+    def create_event(self, id, title, date, time, location, description, priority):
+        event = Event(id, title, date, time, location, description, priority)
+        self.eventSet.add(event)
+        return event
 
-def view_events():
-    st.header("View Events")
-    filter_option = st.selectbox("Filter by", ["All", "Date", "Title", "Location"])
-    
-    if filter_option == "Date":
-        date_filter = st.date_input("Select Date", min_value=datetime.date.today())
-        events = event_manager.searchByDate(date_filter)
-    elif filter_option == "Title":
-        title_filter = st.text_input("Enter Title")
-        events = event_manager.searchByTitle(title_filter)
-    elif filter_option == "Location":
-        location_filter = st.text_input("Enter Location")
-        events = event_manager.searchByLocation(location_filter)
-    else:
-        events = event_manager.viewEvents()  # View all events
+    def modify_event(self, event_id, attribute, new_value):
+        event = self.find_event_by_id(event_id)
+        if event:
+            if attribute == "title":
+                event.title = new_value
+            elif attribute == "date":
+                event.date = datetime.datetime.strptime(new_value, "%Y-%m-%d").date()
+            elif attribute == "time":
+                event.time = datetime.datetime.strptime(new_value, "%H:%M:%S").time()
+            elif attribute == "location":
+                event.location = new_value
+            elif attribute == "description":
+                event.description = new_value
+            elif attribute == "priority":
+                event.priority = int(new_value)
+            else:
+                raise ValueError("Invalid attribute")
+            return event
+        else:
+            return None
 
-    if events:
-        for event in events:
-            st.write(f"ID: {event.getID()}")
-            st.write(f"Title: {event.getTitle()}")
-            st.write(f"Date: {event.getDate()}")
-            st.write(f"Time: {event.getTime()}")
-            st.write(f"Location: {event.getLocation()}")
-            st.write(f"Description: {event.getDescription()}")
-            st.write(f"Priority: {event.getPriority()}")
-            st.write("---")
-    else:
-        st.write("No events found.")
+    def delete_event(self, event_id):
+        event = self.find_event_by_id(event_id)
+        if event:
+            self.eventSet.remove(event)
+            return event
+        else:
+            return None
 
-st.sidebar.title("Event Scheduler")
-option = st.sidebar.selectbox("Select an action", ["Create Event", "View Events"])
+    def viewEvents(self):
+        return list(self.eventSet)
 
-if option == "Create Event":
-    add_event()
-elif option == "View Events":
-    view_events()
+    def searchByDate(self, date):
+        return [event for event in self.eventSet if event.getDate() == date]
+
+    def searchByTitle(self, title):
+        return [event for event in self.eventSet if title.lower() in event.getTitle().lower()]
+
+    def searchByLocation(self, location):
+        return [event for event in self.eventSet if location.lower() in event.getLocation().lower()]
+
+    def sort_events(self, attribute):
+        if attribute == "date":
+            return sorted(self.eventSet, key=lambda e: e.getDate())
+        elif attribute == "title":
+            return sorted(self.eventSet, key=lambda e: e.getTitle())
+        elif attribute == "priority":
+            return sorted(self.eventSet, key=lambda e: e.getPriority())
+        else:
+            raise ValueError("Invalid attribute")
+
+    def find_event_by_id(self, event_id):
+        for event in self.eventSet:
+            if event.getID() == event_id:
+                return event
+        return None
