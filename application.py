@@ -185,3 +185,22 @@ elif command == "Search Events":
             st.dataframe(df)
         else:
             st.write("No events found matching the criteria.")
+
+elif command == "Sort Events":
+    st.subheader("Sort Events")
+    sort_by = st.selectbox("Sort by", ["Date", "Priority", "ID"])
+    
+    if sort_by == "Date":
+        sorted_events = sorted(st.session_state.event_list, key=lambda e: (e.date, e.time))
+    elif sort_by == "Priority":
+        priority_order = {"High": 1, "Medium": 2, "Low": 3}
+        sorted_events = sorted(st.session_state.event_list, key=lambda e: priority_order[e.priority])
+    elif sort_by == "ID":
+        sorted_events = sorted(st.session_state.event_list, key=lambda e: int(e.id))
+    
+    if sorted_events:
+        df = pd.DataFrame([e.to_dict() for e in sorted_events])
+        st.dataframe(df)
+    else:
+        st.write("No events to display.")
+
