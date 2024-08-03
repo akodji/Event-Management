@@ -1,68 +1,104 @@
-from event import Event
-import datetime
+# event_management.py
+
+from datetime import datetime
+
+class Event:
+    def __init__(self, event_id, title, date, time, location, description, priority):
+        self.event_id = event_id
+        self.title = title
+        self.date = date
+        self.time = time
+        self.location = location
+        self.description = description
+        self.priority = priority
+
+    def getID(self):
+        return self.event_id
+
+    def getTitle(self):
+        return self.title
+
+    def getDate(self):
+        return self.date
+
+    def getTime(self):
+        return self.time
+
+    def getLocation(self):
+        return self.location
+
+    def getDescription(self):
+        return self.description
+
+    def getPriority(self):
+        return self.priority
+
+    def setTitle(self, title):
+        self.title = title
+
+    def setDate(self, date):
+        self.date = date
+
+    def setTime(self, time):
+        self.time = time
+
+    def setLocation(self, location):
+        self.location = location
+
+    def setDescription(self, description):
+        self.description = description
+
+    def setPriority(self, priority):
+        self.priority = priority
 
 class EventManagement:
     def __init__(self):
-        self.eventSet = set()
+        self.events = {}
 
-    def create_event(self, id, title, date, time, location, description, priority):
-        event = Event(id, title, date, time, location, description, priority)
-        self.eventSet.add(event)
-        return event
+    def create_event(self, event_id, title, date, time, location, description, priority):
+        if event_id not in self.events:
+            self.events[event_id] = Event(event_id, title, date, time, location, description, priority)
+            return True
+        return False
 
     def modify_event(self, event_id, attribute, new_value):
-        event = self.find_event_by_id(event_id)
+        event = self.events.get(event_id)
         if event:
             if attribute == "title":
-                event.title = new_value
+                event.setTitle(new_value)
             elif attribute == "date":
-                event.date = datetime.datetime.strptime(new_value, "%Y-%m-%d").date()
+                event.setDate(new_value)
             elif attribute == "time":
-                event.time = datetime.datetime.strptime(new_value, "%H:%M:%S").time()
+                event.setTime(new_value)
             elif attribute == "location":
-                event.location = new_value
+                event.setLocation(new_value)
             elif attribute == "description":
-                event.description = new_value
+                event.setDescription(new_value)
             elif attribute == "priority":
-                event.priority = int(new_value)
-            else:
-                raise ValueError("Invalid attribute")
-            return event
-        else:
-            return None
+                event.setPriority(new_value)
+            return True
+        return False
 
     def delete_event(self, event_id):
-        event = self.find_event_by_id(event_id)
-        if event:
-            self.eventSet.remove(event)
-            return event
-        else:
-            return None
+        return self.events.pop(event_id, None) is not None
 
-    def viewEvents(self):
-        return list(self.eventSet)
+    def view_events(self):
+        return list(self.events.values())
 
-    def searchByDate(self, date):
-        return [event for event in self.eventSet if event.getDate() == date]
+    def search_by_title(self, title):
+        return [event for event in self.events.values() if event.getTitle() == title]
 
-    def searchByTitle(self, title):
-        return [event for event in self.eventSet if title.lower() in event.getTitle().lower()]
+    def search_by_date(self, date):
+        return [event for event in self.events.values() if event.getDate() == date]
 
-    def searchByLocation(self, location):
-        return [event for event in self.eventSet if location.lower() in event.getLocation().lower()]
+    def search_by_location(self, location):
+        return [event for event in self.events.values() if event.getLocation() == location]
 
     def sort_events(self, attribute):
         if attribute == "date":
-            return sorted(self.eventSet, key=lambda e: e.getDate())
+            return sorted(self.events.values(), key=lambda e: e.getDate())
         elif attribute == "title":
-            return sorted(self.eventSet, key=lambda e: e.getTitle())
+            return sorted(self.events.values(), key=lambda e: e.getTitle())
         elif attribute == "priority":
-            return sorted(self.eventSet, key=lambda e: e.getPriority())
-        else:
-            raise ValueError("Invalid attribute")
-
-    def find_event_by_id(self, event_id):
-        for event in self.eventSet:
-            if event.getID() == event_id:
-                return event
-        return None
+            return sorted(self.events.values(), key=lambda e: e.getPriority())
+        return []
