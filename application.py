@@ -49,10 +49,13 @@ with st.sidebar:
         priority = st.number_input("Priority", min_value=1, max_value=10, value=1)
         if st.button("Create Event"):
             if id and title and location and description:
-                new_event = Event(id, title, date, time, location, description, priority)
-                st.session_state.event_map[id] = new_event
-                st.session_state.event_list.append(new_event)
-                st.success("Event created successfully!")
+                if id not in st.session_state.event_map:
+                    new_event = Event(id, title, date, time, location, description, priority)
+                    st.session_state.event_map[id] = new_event
+                    st.session_state.event_list.append(new_event)
+                    st.success("Event created successfully!")
+                else:
+                    st.error("Event ID already exists. Please use a different ID.")
             else:
                 st.error("Please fill in all required fields.")
 
@@ -76,6 +79,8 @@ with st.sidebar:
                 event.description = new_description
                 event.priority = new_priority
                 st.session_state.event_map[id] = event  # Update the event in the map
+                st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]  # Update the event list
+                st.session_state.event_list.append(event)  # Add the updated event back to the list
                 st.success("Event modified successfully!")
         else:
             st.error("Event ID not found.")
@@ -104,7 +109,12 @@ with st.sidebar:
         search_attr = st.selectbox("Search by Attribute", ["Title", "Date", "Location"])
         search_value = st.text_input("Search Value")
         if st.button("Search"):
-            filtered_events = [e for e in st.session_state.event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
+            if search_attr == "Date":
+                search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format is correct
+                filtered_events = [e for e in st.session_state.event_list if e.date == search_date]
+            else:
+                filtered_events = [e for e in st.session_state.event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
+            
             if filtered_events:
                 df = pd.DataFrame([e.to_dict() for e in filtered_events])
                 st.dataframe(df)
