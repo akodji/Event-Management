@@ -6,33 +6,45 @@ class EventManagement:
         self.events = {}
         self.next_id = itertools.count(1)
     
-    def create_event(self, title, date, time, location, description, priority):
-        event_id = str(next(self.next_id))
-        event = Event(event_id, title, date, time, location, description, priority)
-        self.events[event_id] = event
-        print(f"Event created: {event}")
+    def create_event():
+    st.header("Create a New Event")
+    with st.form(key='create_event_form'):
+        id = st.text_input("Event ID")
+        title = st.text_input("Title")
+        event_date = st.date_input("Date", min_value=date(1900, 1, 1), max_value=date(2100, 12, 31))
+        event_time = st.time_input("Time", value=time(0, 0))
+        location = st.text_input("Location")
+        description = st.text_area("Description")
+        priority = st.number_input("Priority", min_value=1, max_value=10)
 
-    def modify_event(self, event_id, attribute, new_value):
-        if event_id in self.events:
-            event = self.events[event_id]
-            if attribute == "title":
-                event.title = new_value
-            elif attribute == "date":
-                event.date = datetime.strptime(new_value, "%Y-%m-%d").date()
-            elif attribute == "time":
-                event.time = datetime.strptime(new_value, "%H:%M").time()
-            elif attribute == "location":
-                event.location = new_value
-            elif attribute == "description":
-                event.description = new_value
-            elif attribute == "priority":
-                event.priority = int(new_value)
-            else:
-                print("Invalid attribute.")
-                return
-            print(f"Event modified: {event}")
+        submit_button = st.form_submit_button("Create Event")
+
+        if submit_button:
+            event_management.create_event(id, title, event_date, event_time, location, description, priority)
+            st.success("Event created successfully!")
+
+def modify_event():
+    st.header("Modify an Existing Event")
+    id = st.text_input("Enter Event ID to Modify")
+    
+    if st.button("Load Event"):
+        event = event_management.get_event_by_id(id)
+        if event:
+            with st.form(key='modify_event_form'):
+                title = st.text_input("Title", value=event.title)
+                event_date = st.date_input("Date", value=event.date)
+                event_time = st.time_input("Time", value=event.time)
+                location = st.text_input("Location", value=event.location)
+                description = st.text_area("Description", value=event.description)
+                priority = st.number_input("Priority", min_value=1, max_value=10, value=event.priority)
+
+                submit_button = st.form_submit_button("Update Event")
+
+                if submit_button:
+                    event_management.modify_event(id, title, event_date, event_time, location, description, priority)
+                    st.success("Event modified successfully!")
         else:
-            print("Event ID not found.")
+            st.error("Event not found!")
 
     def delete_event(self, event_id):
         if event_id in self.events:
