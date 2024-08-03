@@ -7,7 +7,7 @@ st.markdown(
     f"""
     <style>
     .reportview-container {{
-        background: url('assets/pexels-towfiqu-barbhuiya-3440682-9810172.jpg');
+        background: url('https://www.pexels.com/photo/close-up-photo-of-red-pins-on-a-calendar-9810172/');
         background-size: cover;
         background-position: center;
     }}
