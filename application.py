@@ -2,6 +2,20 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
+# Add custom CSS for background image
+st.markdown(
+    f"""
+    <style>
+    .reportview-container {{
+        background: url('assets/pexels-towfiqu-barbhuiya-3440682-9810172.jpg');
+        background-size: cover;
+        background-position: center;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Define your Event class
 class Event:
     def __init__(self, id, title, date, time, location, description, priority):
