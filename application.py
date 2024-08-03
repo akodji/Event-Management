@@ -217,12 +217,20 @@ elif command == "Generate Summary":
             summary_events = [e for e in st.session_state.event_list if start_date <= e.date <= end_date]
             
             if summary_events:
-                df = pd.DataFrame([e.to_dict() for e in summary_events])
-                st.dataframe(df)
+                for event in summary_events:
+                    st.write(f"**Event ID:** {event.id}")
+                    st.write(f"**Title:** {event.title}")
+                    st.write(f"**Date:** {event.date.strftime('%Y-%m-%d')}")
+                    st.write(f"**Time:** {event.time.strftime('%H:%M:%S')}")
+                    st.write(f"**Location:** {event.location}")
+                    st.write(f"**Description:** {event.description}")
+                    st.write(f"**Priority:** {event.priority}")
+                    st.write("------------------------")
             else:
                 st.write("No events found in the specified date range.")
         else:
             st.error("Start date must be on or before end date.")
+
 
 
 
