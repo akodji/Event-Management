@@ -89,7 +89,7 @@ if command == "Create Event":
         time = st.time_input("Time", datetime.now().time())
         location = st.text_input("Location")
         description = st.text_area("Description")
-        priority = st.number_input("Priority", min_value=1, max_value=10, value=1)
+        priority = st.selectbox("Priority", ["High", "Medium", "Low"])
         submit_button = st.form_submit_button("Create Event")
         if submit_button:
             if id.isdigit() and title and location and description:
@@ -120,7 +120,7 @@ elif command == "Modify Event":
                     new_time = st.time_input("New Time", value=event.time)
                     new_location = st.text_input("New Location", value=event.location)
                     new_description = st.text_area("New Description", value=event.description)
-                    new_priority = st.number_input("New Priority", value=event.priority, min_value=1, max_value=10)
+                    new_priority = st.selectbox("New Priority", ["High", "Medium", "Low"], index=["High", "Medium", "Low"].index(event.priority))
                     
                     submit_button = st.form_submit_button("Modify Event")
 
@@ -171,52 +171,4 @@ elif command == "Search Events":
     if st.button("Search"):
         if search_attr == "Date":
             try:
-                search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format is correct
-                filtered_events = [e for e in st.session_state.event_list if e.date == search_date]
-            except ValueError:
-                st.error("Invalid date format. Please use YYYY-MM-DD.")
-                filtered_events = []
-        else:
-            filtered_events = [e for e in st.session_state.event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
-        
-        if filtered_events:
-            df = pd.DataFrame([e.to_dict() for e in filtered_events])
-            st.dataframe(df)
-        else:
-            st.write("No events found.")
-
-elif command == "Sort Events":
-    st.subheader("Sort Events")
-    sort_attr = st.selectbox("Sort by Attribute", ["Date", "Title", "Priority"])
-    if st.button("Sort"):
-        sorted_events = sorted(st.session_state.event_list, key=lambda e: getattr(e, sort_attr.lower()))
-        df = pd.DataFrame([e.to_dict() for e in sorted_events])
-        st.dataframe(df)
-
-elif command == "Generate Summary":
-    st.subheader("Generate Event Summary")
-    date_range = st.date_input("Date Range", value=(datetime.now().date(), datetime.now().date()))
-    start_date, end_date = date_range
-    summary = [e for e in st.session_state.event_list if start_date <= e.date <= end_date]
-    if summary:
-        for event in summary:
-            st.write(f"Event ID: {event.id}")
-            st.write(f"Title: {event.title}")
-            st.write(f"Date: {event.date}")
-            st.write(f"Time: {event.time}")
-            st.write(f"Location: {event.location}")
-            st.write(f"Description: {event.description}")
-            st.write(f"Priority: {event.priority}")
-            st.write("-------------")
-    else:
-        st.write("No events found in the specified date range.")
-
-# Footer
-st.markdown(
-    """
-    <footer>
-        Built by: Mercy, Babina, and Anna | Ashesi University | 2024
-    </footer>
-    """,
-    unsafe_allow_html=True
-)
+                search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format
