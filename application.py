@@ -80,7 +80,6 @@ if 'event_list' not in st.session_state:
 st.sidebar.header("Commands")
 command = st.sidebar.selectbox("Choose a command", ["Create Event", "Modify Event", "Delete Event", "View Events", "Search Events", "Sort Events", "Generate Summary"])
 
-# Create Event section
 if command == "Create Event":
     st.subheader("Create a New Event")
     with st.form(key='create_event_form'):
@@ -92,18 +91,13 @@ if command == "Create Event":
         description = st.text_area("Description")
         priority = st.selectbox("Priority", ["High", "Medium", "Low"])
         submit_button = st.form_submit_button("Create Event")
-        
         if submit_button:
             if id.isdigit() and title and location and description:
                 if id not in st.session_state.event_map:
                     new_event = Event(id, title, date, time, location, description, priority)
                     st.session_state.event_map[id] = new_event
                     st.session_state.event_list.append(new_event)
-                    with st.spinner("Creating event..."):
-                        time.sleep(1)  # Simulate processing time
                     st.success("Event created successfully!")
-                    time.sleep(2)  # Display the message for a short period
-                    st.empty()  # Clear the success message
                 else:
                     st.error("Event ID already exists. Please use a different ID.")
             else:
