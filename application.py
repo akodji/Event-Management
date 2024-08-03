@@ -204,4 +204,25 @@ elif command == "Sort Events":
     else:
         st.write("No events to display.")
 
+elif command == "Generate Summary":
+    st.subheader("Generate Summary of Events")
+    
+    # Input date range for summary
+    start_date = st.date_input("Start Date", datetime.now().date())
+    end_date = st.date_input("End Date", datetime.now().date())
+
+    if st.button("Generate Summary"):
+        if start_date <= end_date:
+            # Filter events based on date range
+            summary_events = [e for e in st.session_state.event_list if start_date <= e.date <= end_date]
+            
+            if summary_events:
+                df = pd.DataFrame([e.to_dict() for e in summary_events])
+                st.dataframe(df)
+            else:
+                st.write("No events found in the specified date range.")
+        else:
+            st.error("Start date must be on or before end date.")
+
+
 
