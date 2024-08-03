@@ -7,11 +7,9 @@ class EventManagement:
         self.next_id = itertools.count(1)
     
     def create_event(self, id, title, event_date, event_time, location, description, priority):
-        # Check if the ID already exists
         if id in self.events:
             return None  # Indicate that the ID is already used
         
-        # Create and store the event
         event = {
             'id': id,
             'title': title,
@@ -62,7 +60,11 @@ class EventManagement:
         return found
 
     def sort_events(self, attribute):
-        sorted_events = sorted(self.events.values(), key=lambda e: e[attribute])
+        priority_order = {"High": 1, "Medium": 2, "Low": 3}
+        if attribute == "priority":
+            sorted_events = sorted(self.events.values(), key=lambda e: priority_order[e['priority']])
+        else:
+            sorted_events = sorted(self.events.values(), key=lambda e: e[attribute])
         return sorted_events
     
     def generate_summary(self, start_date, end_date):
