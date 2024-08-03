@@ -215,7 +215,7 @@ elif command == "Generate Summary":
 st.markdown(
     """
     <footer>
-        Built by: Anna, Mercy, and Babina | Ashesi University | 2024
+        Built by: Mercy, Babina, and Anna | Ashesi University | 2024
     </footer>
     """,
     unsafe_allow_html=True
