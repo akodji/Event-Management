@@ -24,8 +24,11 @@ st.markdown(
     }
     .title {
         text-align: center;
-        color: #FF6347;
+        color: white;  /* Change text color to white */
+        font-family: 'Roboto', sans-serif;  /* Use a Google Font */
         font-size: 36px;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
     </style>
     """,
