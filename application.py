@@ -24,9 +24,11 @@ class Event:
             "Priority": self.priority
         }
 
-# In-memory data structures
-event_map = {}
-event_list = []
+# Initialize session state
+if 'event_map' not in st.session_state:
+    st.session_state.event_map = {}
+if 'event_list' not in st.session_state:
+    st.session_state.event_list = []
 
 # Streamlit UI
 st.title("Event Scheduler and Calendar")
@@ -48,8 +50,8 @@ with st.sidebar:
         if st.button("Create Event"):
             if id and title and location and description:
                 new_event = Event(id, title, date, time, location, description, priority)
-                event_map[id] = new_event
-                event_list.append(new_event)
+                st.session_state.event_map[id] = new_event
+                st.session_state.event_list.append(new_event)
                 st.success("Event created successfully!")
             else:
                 st.error("Please fill in all required fields.")
@@ -57,8 +59,8 @@ with st.sidebar:
     elif command == "Modify Event":
         st.subheader("Modify an Existing Event")
         id = st.text_input("Event ID to Modify")
-        if id in event_map:
-            event = event_map[id]
+        if id in st.session_state.event_map:
+            event = st.session_state.event_map[id]
             new_title = st.text_input("New Title", value=event.title)
             new_date = st.date_input("New Date", value=event.date)
             new_time = st.time_input("New Time", value=event.time)
@@ -73,6 +75,7 @@ with st.sidebar:
                 event.location = new_location
                 event.description = new_description
                 event.priority = new_priority
+                st.session_state.event_map[id] = event  # Update the event in the map
                 st.success("Event modified successfully!")
         else:
             st.error("Event ID not found.")
@@ -81,17 +84,17 @@ with st.sidebar:
         st.subheader("Delete an Event")
         id = st.text_input("Event ID to Delete")
         if st.button("Delete Event"):
-            if id in event_map:
-                event_map.pop(id)
-                event_list[:] = [e for e in event_list if e.id != id]
+            if id in st.session_state.event_map:
+                st.session_state.event_map.pop(id)
+                st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]
                 st.success("Event deleted successfully!")
             else:
                 st.error("Event ID not found.")
 
     elif command == "View Events":
         st.subheader("View Events")
-        if event_list:
-            df = pd.DataFrame([e.to_dict() for e in event_list])
+        if st.session_state.event_list:
+            df = pd.DataFrame([e.to_dict() for e in st.session_state.event_list])
             st.dataframe(df)
         else:
             st.write("No events to display.")
@@ -101,7 +104,7 @@ with st.sidebar:
         search_attr = st.selectbox("Search by Attribute", ["Title", "Date", "Location"])
         search_value = st.text_input("Search Value")
         if st.button("Search"):
-            filtered_events = [e for e in event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
+            filtered_events = [e for e in st.session_state.event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
             if filtered_events:
                 df = pd.DataFrame([e.to_dict() for e in filtered_events])
                 st.dataframe(df)
@@ -112,7 +115,7 @@ with st.sidebar:
         st.subheader("Sort Events")
         sort_attr = st.selectbox("Sort by Attribute", ["Date", "Title", "Priority"])
         if st.button("Sort"):
-            sorted_events = sorted(event_list, key=lambda e: getattr(e, sort_attr.lower()))
+            sorted_events = sorted(st.session_state.event_list, key=lambda e: getattr(e, sort_attr.lower()))
             df = pd.DataFrame([e.to_dict() for e in sorted_events])
             st.dataframe(df)
 
@@ -120,7 +123,7 @@ with st.sidebar:
         st.subheader("Generate Event Summary")
         date_range = st.date_input("Date Range", value=(datetime.now().date(), datetime.now().date()))
         start_date, end_date = date_range
-        summary = [e for e in event_list if start_date <= e.date <= end_date]
+        summary = [e for e in st.session_state.event_list if start_date <= e.date <= end_date]
         if summary:
             for event in summary:
                 st.write(f"Event ID: {event.id}")
@@ -133,4 +136,3 @@ with st.sidebar:
                 st.write("-------------")
         else:
             st.write("No events found in the specified date range.")
-
