@@ -1,5 +1,8 @@
+# app.py
+
 import streamlit as st
 from event_management import EventManagement
+from datetime import date, time
 import datetime
 
 # Initialize the EventManagement instance
@@ -12,8 +15,8 @@ st.title("Event Scheduler and Calendar")
 st.header("Create Event")
 with st.form(key="create_event_form"):
     title = st.text_input("Title")
-    date = st.date_input("Date", value=datetime.date.today())
-    time = st.time_input("Time", value=datetime.datetime.now().time())
+    event_date = st.date_input("Date", value=datetime.date.today())
+    event_time = st.time_input("Time", value=datetime.datetime.now().time())
     location = st.text_input("Location")
     description = st.text_area("Description")
     priority = st.slider("Priority", min_value=1, max_value=5)
@@ -21,8 +24,11 @@ with st.form(key="create_event_form"):
 
     if submit_button:
         event_id = len(event_manager.view_events()) + 1  # Simple ID generation
-        event_manager.create_event(event_id, title, date, time, location, description, priority)
-        st.success(f"Event '{title}' created successfully!")
+        success = event_manager.create_event(event_id, title, event_date, event_time, location, description, priority)
+        if success:
+            st.success(f"Event '{title}' created successfully!")
+        else:
+            st.error("Failed to create event. Event ID might already exist.")
 
 # Modify an existing event
 st.header("Modify Event")
@@ -38,8 +44,8 @@ with st.form(key="modify_event_form"):
                 new_value = datetime.datetime.strptime(new_value, "%Y-%m-%d").date() if attribute == "date" else datetime.datetime.strptime(new_value, "%H:%M:%S").time()
             elif attribute == "priority":
                 new_value = int(new_value)
-            updated_event = event_manager.modify_event(event_id, attribute, new_value)
-            if updated_event:
+            success = event_manager.modify_event(event_id, attribute, new_value)
+            if success:
                 st.success(f"Event ID {event_id} modified successfully!")
             else:
                 st.error(f"Event ID {event_id} not found.")
@@ -53,8 +59,8 @@ with st.form(key="delete_event_form"):
     delete_button = st.form_submit_button("Delete Event")
 
     if delete_button:
-        deleted_event = event_manager.delete_event(delete_id)
-        if deleted_event:
+        success = event_manager.delete_event(delete_id)
+        if success:
             st.success(f"Event ID {delete_id} deleted successfully!")
         else:
             st.error(f"Event ID {delete_id} not found.")
