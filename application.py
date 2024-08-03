@@ -48,7 +48,7 @@ with st.sidebar:
         description = st.text_area("Description")
         priority = st.number_input("Priority", min_value=1, max_value=10, value=1)
         if st.button("Create Event"):
-            if id and title and location and description:
+            if id.isdigit() and title and location and description:
                 if id not in st.session_state.event_map:
                     new_event = Event(id, title, date, time, location, description, priority)
                     st.session_state.event_map[id] = new_event
@@ -57,38 +57,44 @@ with st.sidebar:
                 else:
                     st.error("Event ID already exists. Please use a different ID.")
             else:
-                st.error("Please fill in all required fields.")
+                if not id.isdigit():
+                    st.error("Event ID must be numeric.")
+                else:
+                    st.error("Please fill in all required fields.")
 
     elif command == "Modify Event":
         st.subheader("Modify an Existing Event")
         id = st.text_input("Event ID to Modify")
         
         if id:
-            if id in st.session_state.event_map:
-                event = st.session_state.event_map[id]
-                with st.form(key='modify_event_form'):
-                    new_title = st.text_input("New Title", value=event.title)
-                    new_date = st.date_input("New Date", value=event.date)
-                    new_time = st.time_input("New Time", value=event.time)
-                    new_location = st.text_input("New Location", value=event.location)
-                    new_description = st.text_area("New Description", value=event.description)
-                    new_priority = st.number_input("New Priority", value=event.priority, min_value=1, max_value=10)
-                    
-                    submit_button = st.form_submit_button("Modify Event")
+            if id.isdigit():
+                if id in st.session_state.event_map:
+                    event = st.session_state.event_map[id]
+                    with st.form(key='modify_event_form'):
+                        new_title = st.text_input("New Title", value=event.title)
+                        new_date = st.date_input("New Date", value=event.date)
+                        new_time = st.time_input("New Time", value=event.time)
+                        new_location = st.text_input("New Location", value=event.location)
+                        new_description = st.text_area("New Description", value=event.description)
+                        new_priority = st.number_input("New Priority", value=event.priority, min_value=1, max_value=10)
+                        
+                        submit_button = st.form_submit_button("Modify Event")
 
-                    if submit_button:
-                        event.title = new_title
-                        event.date = new_date
-                        event.time = new_time
-                        event.location = new_location
-                        event.description = new_description
-                        event.priority = new_priority
-                        st.session_state.event_map[id] = event  # Update the event in the map
-                        st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]  # Update the event list
-                        st.session_state.event_list.append(event)  # Add the updated event back to the list
-                        st.success("Event modified successfully!")
+                        if submit_button:
+                            event.title = new_title
+                            event.date = new_date
+                            event.time = new_time
+                            event.location = new_location
+                            event.description = new_description
+                            event.priority = new_priority
+                            st.session_state.event_map[id] = event  # Update the event in the map
+                            st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]  # Update the event list
+                            st.session_state.event_list.append(event)  # Add the updated event back to the list
+                            st.success("Event modified successfully!")
+                else:
+                    st.error("Event ID not found.")
             else:
-                st.error("Event ID not found.")
+                st.error("Event ID must be numeric.")
         else:
             st.warning("Please enter an Event ID.")
 
@@ -96,12 +102,15 @@ with st.sidebar:
         st.subheader("Delete an Event")
         id = st.text_input("Event ID to Delete")
         if st.button("Delete Event"):
-            if id in st.session_state.event_map:
-                st.session_state.event_map.pop(id)
-                st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]
-                st.success("Event deleted successfully!")
+            if id.isdigit():
+                if id in st.session_state.event_map:
+                    st.session_state.event_map.pop(id)
+                    st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]
+                    st.success("Event deleted successfully!")
+                else:
+                    st.error("Event ID not found.")
             else:
-                st.error("Event ID not found.")
+                st.error("Event ID must be numeric.")
 
     elif command == "View Events":
         st.subheader("View Events")
