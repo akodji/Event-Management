@@ -168,7 +168,20 @@ elif command == "Search Events":
     st.subheader("Search Events")
     search_attr = st.selectbox("Search by Attribute", ["Title", "Date", "Location"])
     search_value = st.text_input("Search Value")
+    
     if st.button("Search"):
+        found_events = []
         if search_attr == "Date":
             try:
                 search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format
+                found_events = [e for e in st.session_state.event_list if e.date == search_date]
+            except ValueError:
+                st.error("Invalid date format. Please use YYYY-MM-DD.")
+        else:
+            found_events = [e for e in st.session_state.event_list if search_value.lower() in getattr(e, search_attr.lower()).lower()]
+
+        if found_events:
+            df = pd.DataFrame([e.to_dict() for e in found_events])
+            st.dataframe(df)
+        else:
+            st.write("No events found matching the criteria.")
