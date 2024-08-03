@@ -62,28 +62,35 @@ with st.sidebar:
     elif command == "Modify Event":
         st.subheader("Modify an Existing Event")
         id = st.text_input("Event ID to Modify")
-        if id in st.session_state.event_map:
-            event = st.session_state.event_map[id]
-            new_title = st.text_input("New Title", value=event.title)
-            new_date = st.date_input("New Date", value=event.date)
-            new_time = st.time_input("New Time", value=event.time)
-            new_location = st.text_input("New Location", value=event.location)
-            new_description = st.text_area("New Description", value=event.description)
-            new_priority = st.number_input("New Priority", value=event.priority, min_value=1, max_value=10)
-            
-            if st.button("Modify Event"):
-                event.title = new_title
-                event.date = new_date
-                event.time = new_time
-                event.location = new_location
-                event.description = new_description
-                event.priority = new_priority
-                st.session_state.event_map[id] = event  # Update the event in the map
-                st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]  # Update the event list
-                st.session_state.event_list.append(event)  # Add the updated event back to the list
-                st.success("Event modified successfully!")
+        
+        if id:
+            if id in st.session_state.event_map:
+                event = st.session_state.event_map[id]
+                with st.form(key='modify_event_form'):
+                    new_title = st.text_input("New Title", value=event.title)
+                    new_date = st.date_input("New Date", value=event.date)
+                    new_time = st.time_input("New Time", value=event.time)
+                    new_location = st.text_input("New Location", value=event.location)
+                    new_description = st.text_area("New Description", value=event.description)
+                    new_priority = st.number_input("New Priority", value=event.priority, min_value=1, max_value=10)
+                    
+                    submit_button = st.form_submit_button("Modify Event")
+
+                    if submit_button:
+                        event.title = new_title
+                        event.date = new_date
+                        event.time = new_time
+                        event.location = new_location
+                        event.description = new_description
+                        event.priority = new_priority
+                        st.session_state.event_map[id] = event  # Update the event in the map
+                        st.session_state.event_list[:] = [e for e in st.session_state.event_list if e.id != id]  # Update the event list
+                        st.session_state.event_list.append(event)  # Add the updated event back to the list
+                        st.success("Event modified successfully!")
+            else:
+                st.error("Event ID not found.")
         else:
-            st.error("Event ID not found.")
+            st.warning("Please enter an Event ID.")
 
     elif command == "Delete Event":
         st.subheader("Delete an Event")
@@ -110,8 +117,12 @@ with st.sidebar:
         search_value = st.text_input("Search Value")
         if st.button("Search"):
             if search_attr == "Date":
-                search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format is correct
-                filtered_events = [e for e in st.session_state.event_list if e.date == search_date]
+                try:
+                    search_date = datetime.strptime(search_value, "%Y-%m-%d").date()  # Ensure date format is correct
+                    filtered_events = [e for e in st.session_state.event_list if e.date == search_date]
+                except ValueError:
+                    st.error("Invalid date format. Please use YYYY-MM-DD.")
+                    filtered_events = []
             else:
                 filtered_events = [e for e in st.session_state.event_list if getattr(e, search_attr.lower(), "").lower() == search_value.lower()]
             
