@@ -14,9 +14,7 @@ st.markdown(
     """
     <style>
     .reportview-container {
-        background-image: url('file:///C:/Users/Anna%20Kodji/OneDrive%20-%20Ashesi%20University/DSA%20Project%20Work/pexels-towfiqu-barbhuiya-3440682-9810172.jpg');
-        background-size: cover;
-        background-position: center;
+        background-color: #f0f2f6;
     }
     .sidebar .sidebar-content {
         background-color: #ffffff;
@@ -26,18 +24,21 @@ st.markdown(
     }
     .title {
         text-align: center;
-        color: #FF6347;
+        color: white;
+        font-family: 'Arial Narrow', sans-serif;
+        font-weight: bold;
         font-size: 36px;
-        font-family: 'Arial Narrow', sans-serif;
-        font-weight: 700;
     }
-    .footer {
+    footer {
+        color: white;
         position: fixed;
-        bottom: 10px;
-        left: 10px;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+        background-color: #333;
         font-size: 12px;
-        color: #000000;
-        font-family: 'Arial Narrow', sans-serif;
+        font-family: 'Arial', sans-serif;
     }
     </style>
     """,
@@ -210,13 +211,12 @@ elif command == "Generate Summary":
     else:
         st.write("No events found in the specified date range.")
 
-# Footer with credit and affiliation information
+# Footer
 st.markdown(
     """
-    <div class="footer">
-        Built by: Anna, Mercy, and Babina<br>
-        Ashesi University, 2024
-    </div>
+    <footer>
+        Built by: Anna, Mercy, and Babina | Ashesi University | 2024
+    </footer>
     """,
     unsafe_allow_html=True
 )
