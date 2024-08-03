@@ -6,8 +6,12 @@ class EventManagement:
         self.events = {}
         self.next_id = itertools.count(1)
     
-    def create_event(self, title, event_date, event_time, location, description, priority):
-        id = next(self.next_id)
+    def create_event(self, id, title, event_date, event_time, location, description, priority):
+        # Check if the ID already exists
+        if id in self.events:
+            return None  # Indicate that the ID is already used
+        
+        # Create and store the event
         event = {
             'id': id,
             'title': title,
