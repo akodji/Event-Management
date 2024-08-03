@@ -50,7 +50,7 @@ st.markdown('<p class="title">Event Scheduler and Calendar</p>', unsafe_allow_ht
 
 # Define your Event class
 class Event:
-    def _init_(self, id, title, date, time, location, description, priority):
+    def __init__(self, id, title, date, time, location, description, priority):
         self.id = id
         self.title = title
         self.date = date
